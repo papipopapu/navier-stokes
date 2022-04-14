@@ -8,7 +8,6 @@ int main()
     myFluid.drawBorders({top, back, bot});
     simulation mySimulation(myFluid);
     mySimulation.g = 1;
-    mySimulation.b = 0;
     mySimulation.radius = 5;
     mySimulation.draw = 0;
     //std::cout << myFluid.solidCoordinates.is.size();

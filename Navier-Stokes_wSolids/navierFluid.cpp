@@ -79,8 +79,10 @@ const float navier::grid::operator()(size_t i, size_t j) const
 {
     return V[i*Nj + j];
 }
-size_t navier::grid::getNi() const {return Ni;}
-size_t navier::grid::getNj() const {return Nj;}
+const size_t & navier::grid::getNi() const {return Ni;}
+const size_t & navier::grid::getNj() const {return Nj;}
+size_t & navier::grid::getNi()  {return Ni;}
+size_t & navier::grid::getNj()  {return Nj;}
 
 
 void navier::swapV(grid& u1, grid& u2) { std::swap(u1.getV() , u2.getV());}
@@ -134,33 +136,38 @@ void navier::fluid::step(float dt_)
     t += dt;
 
 }
-size_t navier::fluid::getNi() const {return Ni;}
-size_t navier::fluid::getNj() const {return Nj;}
-
-
 
 navier::simulation::simulation (fluid Fluid_) : Fluid(Fluid_) 
 {
-    Nj = Fluid.getNj(), Ni = Fluid.getNi(), WIDTH = Nj-2, HEIGHT = Ni-2;
+    Nj = Fluid.Nj, Ni = Fluid.Ni, WIDTH = Nj-2, HEIGHT = Ni-2;
+}
+void navier::simulation::start()
+{
+    sf::Texture texture;
+    sf::Sprite sprite;
+    sf::Image image;
+    sf::RenderWindow window;
     window.create(sf::VideoMode(WIDTH, HEIGHT, 32), "Navier-Stokes", sf::Style::Default);
     window.setFramerateLimit(fps);
     texture.create(WIDTH, HEIGHT);
     sprite.setTexture(texture);
     sprite.setPosition(0,0);
-}
-void navier::simulation::start()
-{
+
+
     std::vector<sf::Uint8> pixels(HEIGHT*WIDTH*4, 0);
     int i, j, ip, jp;
     float t = 0, factorI, factorJ, x , y, x0, y0;
     sf::Vector2i pos0, pos;
     sf::Event event;
     sf::Clock deltaClock;
+
+    initialConditions(Fluid.s, Fluid.p, Fluid.u, Fluid.v);
     while(window.isOpen())
     {
         sf::Time deltaTime = deltaClock.restart();
         const float dt = deltaTime.asSeconds();
         factorI = (float)HEIGHT/(window.getSize().y-1); factorJ = (float)WIDTH/(window.getSize().x-1);
+        periodicP(Fluid.p, t, dt); periodicV(Fluid.v, t, dt); periodicU(Fluid.u, t, dt); periodicS(Fluid.s, t, dt); 
         Fluid.step(dt);
 
         while (window.pollEvent(event))
@@ -215,6 +222,7 @@ void navier::simulation::start()
         texture.update(pixels.data());
         window.draw(sprite);
         window.display();
+        t += dt;
     }
 }
 

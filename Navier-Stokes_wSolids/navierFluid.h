@@ -29,8 +29,11 @@ class grid
     const std::vector<float>  & getV()  const;
     float & operator()(size_t i, size_t j);
     const float operator()(size_t i, size_t j) const;
-    size_t getNi() const;
-    size_t getNj() const;
+
+    const size_t & getNi() const;
+    const size_t & getNj() const;
+    size_t & getNi();
+    size_t & getNj();
 };
 
 class coordinates
@@ -41,6 +44,8 @@ class coordinates
     coordinates(grid &map);
     void fill(grid &map);
 };
+void pass(grid &s, double t, double dt) {}
+void pass(grid &s, grid &p, grid &u, grid &v) {}
 void paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float r, float g, float b, int a); // to's end's not included
 void addSource(int radius, grid &S, int i, int j, int b, float val, coordinates &solidCoordinates, grid &solidMap);
 void advect(int b, float dt, grid &s, grid &s0, grid &u, grid &v, coordinates &solidCoordinates, grid &solidMap);
@@ -52,12 +57,13 @@ void swapV(grid& u1, grid& u2);
 
 class fluid
 {
-    public:
+    private:
     int Ni, Nj;
     float t = 0, dt, visc = 1, diff = 1; // normalized dh = 1
     grid u, v, u0, v0, s, s0, p, solidMap;
     coordinates solidCoordinates;
 
+    public:
     fluid(int Ni_, int Nj_);// Ni, Nj refer to the dimensions including solid cells
     void drawBorders(std::initializer_list<line> Lines);
     void addS(int i, int j, int radius, float val);
@@ -66,8 +72,8 @@ class fluid
     void vStep();
     void sStep();
     void step(float dt_);
-    size_t getNi() const;
-    size_t getNj() const;
+
+    friend class simulation;
 
 };
 class simulation
@@ -76,13 +82,15 @@ class simulation
     fluid Fluid;
 
     size_t WIDTH, HEIGHT, Ni, Nj;
-    sf::Texture texture;
-    sf::Sprite sprite;
-    sf::Image image;
-    sf::RenderWindow window;
-
     public:
+    void (*periodicU) (grid &s, double t, double dt) = &pass,
+         (*periodicV) (grid &s, double t, double dt) = &pass,
+         (*periodicS) (grid &s, double t, double dt) = &pass,
+         (*periodicP) (grid &s, double t, double dt) = &pass;
+
+    void (*initialConditions) (grid &s, grid &p, grid &u, grid &v) = &pass;
     float mouseS = 500, mouseV = 10, mouseP = 50000; // increment of addition
+
     float r = 0, g = 0, b = 1;
     uint8_t a = 255; // colors
     uint8_t draw = 0, radius = 3;// 0 for s, 1 for u, 2 for v, 3 for p
