@@ -1,5 +1,6 @@
 #include <cstring>
 #include <iostream>
+#include <algorithm>
 #include <SFML/Graphics.hpp>
 
 
@@ -46,11 +47,12 @@ class coordinates
 };
 void pass(grid &s, double t, double dt) {}
 void pass(grid &s, grid &p, grid &u, grid &v) {}
-void paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float r, float g, float b, int a); // to's end's not included
+void paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float r, float g, float b, int a, float max, float min); // to's end's not included
 void addSource(int radius, grid &S, int i, int j, int b, float val, coordinates &solidCoordinates, grid &solidMap);
 void advect(int b, float dt, grid &s, grid &s0, grid &u, grid &v, coordinates &solidCoordinates, grid &solidMap);
 void diffuse(int b, float dt, float diff, grid &s, grid &s0, coordinates &solidCoordinates, grid &solidMap);
 void project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoordinates, grid &solidMap);
+void dissipate(grid &s, double dt, float disip);
 void boundaries(int b, grid &x);
 void lineBoundaries(int b, grid &x, coordinates &solidCoordinates, grid &solidMap);
 void swapV(grid& u1, grid& u2);
@@ -59,7 +61,7 @@ class fluid
 {
     private:
     int Ni, Nj;
-    float t = 0, dt, visc = 1, diff = 1; // normalized dh = 1
+    float t = 0, dt, visc = 1, diff = 1, disip = 0.005; // normalized dh = 1
     grid u, v, u0, v0, s, s0, p, solidMap;
     coordinates solidCoordinates;
 
@@ -81,7 +83,7 @@ class simulation
     private:
     fluid Fluid;
 
-    size_t WIDTH, HEIGHT, Ni, Nj;
+    size_t Ni, Nj;
     public:
     void (*periodicU) (grid &s, double t, double dt) = &pass,
          (*periodicV) (grid &s, double t, double dt) = &pass,
@@ -89,9 +91,11 @@ class simulation
          (*periodicP) (grid &s, double t, double dt) = &pass;
 
     void (*initialConditions) (grid &s, grid &p, grid &u, grid &v) = &pass;
-    float mouseS = 500, mouseV = 10, mouseP = 50000; // increment of addition
-
+    float mouseS = 2000, mouseV = 10, mouseP = 50000; // increment of addition
     float r = 0, g = 0, b = 1;
+    float screenFactor = 1;
+    float playSpeed = 0.2;
+    bool normalize = true;
     uint8_t a = 255; // colors
     uint8_t draw = 0, radius = 3;// 0 for s, 1 for u, 2 for v, 3 for p
     uint8_t fps = 33;

@@ -127,6 +127,7 @@ void navier::fluid::sStep()
     diffuse(0, dt, diff, s, s0, solidCoordinates, solidMap);
     swapV(s, s0); 
     advect(0, dt, s, s0, u, v, solidCoordinates, solidMap);
+    dissipate(s, dt, disip);
 }
 void navier::fluid::step(float dt_)
 {
@@ -139,22 +140,26 @@ void navier::fluid::step(float dt_)
 
 navier::simulation::simulation (fluid Fluid_) : Fluid(Fluid_) 
 {
-    Nj = Fluid.Nj, Ni = Fluid.Ni, WIDTH = Nj-2, HEIGHT = Ni-2;
+    Nj = Fluid.Nj, Ni = Fluid.Ni;
 }
 void navier::simulation::start()
 {
+    size_t HEIGHT = (Ni-2), WIDTH = (Nj-2);
     sf::Texture texture;
     sf::Sprite sprite;
     sf::Image image;
     sf::RenderWindow window;
-    window.create(sf::VideoMode(WIDTH, HEIGHT, 32), "Navier-Stokes", sf::Style::Default);
+    window.create(sf::VideoMode(WIDTH*screenFactor, HEIGHT*screenFactor, 32), "Navier-Stokes", sf::Style::Default);
     window.setFramerateLimit(fps);
     texture.create(WIDTH, HEIGHT);
     sprite.setTexture(texture);
     sprite.setPosition(0,0);
+    sprite.setScale(screenFactor, screenFactor);
+
 
 
     std::vector<sf::Uint8> pixels(HEIGHT*WIDTH*4, 0);
+    std::pair<std::vector<float>::iterator, std::vector<float>::iterator> minMax;
     int i, j, ip, jp;
     float t = 0, factorI, factorJ, x , y, x0, y0;
     sf::Vector2i pos0, pos;
@@ -164,8 +169,9 @@ void navier::simulation::start()
     initialConditions(Fluid.s, Fluid.p, Fluid.u, Fluid.v);
     while(window.isOpen())
     {
+  
         sf::Time deltaTime = deltaClock.restart();
-        const float dt = deltaTime.asSeconds();
+        const float dt = deltaTime.asSeconds() * playSpeed;
         factorI = (float)HEIGHT/(window.getSize().y-1); factorJ = (float)WIDTH/(window.getSize().x-1);
         periodicP(Fluid.p, t, dt); periodicV(Fluid.v, t, dt); periodicU(Fluid.u, t, dt); periodicS(Fluid.s, t, dt); 
         Fluid.step(dt);
@@ -214,10 +220,30 @@ void navier::simulation::start()
         window.clear(sf::Color::Black);
         switch(draw)
         {
-            case 0: paintPixels(Fluid.s, Fluid.solidMap, pixels, r, g, b, a); break;
-            case 1: paintPixels(Fluid.u, Fluid.solidMap, pixels, r, g, b, a); break;
-            case 2: paintPixels(Fluid.v, Fluid.solidMap, pixels, r, g, b, a); break;
-            case 3: paintPixels(Fluid.p, Fluid.solidMap, pixels, r, g, b, a); break;
+            case 0:
+            if (normalize) {
+            minMax = std::minmax_element(Fluid.s.getV().begin(), Fluid.s.getV().end());
+            paintPixels(Fluid.s, Fluid.solidMap, pixels, r, g, b, a, *minMax.second, *minMax.first); break;}
+            else {
+                paintPixels(Fluid.s, Fluid.solidMap, pixels, r, g, b, a, 255, 0);}
+            case 1: 
+            if (normalize) {
+            minMax = std::minmax_element(Fluid.u.getV().begin(), Fluid.u.getV().end());
+            paintPixels(Fluid.u, Fluid.solidMap, pixels, r, g, b, a, *minMax.second, *minMax.first); break;}
+            else {
+                paintPixels(Fluid.u, Fluid.solidMap, pixels, r, g, b, a, 255, 0);}
+            case 2: 
+            if (normalize) {
+            minMax = std::minmax_element(Fluid.v.getV().begin(), Fluid.v.getV().end());
+            paintPixels(Fluid.v, Fluid.solidMap, pixels, r, g, b, a, *minMax.second, *minMax.first); break;}
+            else {
+                paintPixels(Fluid.v, Fluid.solidMap, pixels, r, g, b, a, 255, 0);}
+            case 3: 
+            if (normalize) {
+            minMax = std::minmax_element(Fluid.p.getV().begin(), Fluid.p.getV().end());
+            paintPixels(Fluid.p, Fluid.solidMap, pixels, r, g, b, a, *minMax.second, *minMax.first); break;}
+            else {
+                paintPixels(Fluid.p, Fluid.solidMap, pixels, r, g, b, a, 255, 0);}
         }
         texture.update(pixels.data());
         window.draw(sprite);
@@ -268,6 +294,13 @@ void navier::diffuse(int b, float dt, float diff, grid &s, grid &s0, coordinates
         lineBoundaries(b, s, solidCoordinates, solidMap);
     }
 
+}
+void navier::dissipate(grid &s, double t, float disip)
+{
+    for (float &val : s.getV())
+    {
+        val *= (1 - t*disip);
+    }
 }
 void navier::boundaries(int b, grid &s) // 1 for -nx
 { 
@@ -351,7 +384,7 @@ void navier::project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoo
     boundaries(2, v); lineBoundaries(2, v, solidCoordinates, solidMap);
 }
 
-void navier::paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float  r, float g, float b, int a) // fuck boundaries
+void navier::paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float  r, float g, float b, int a, float max, float min) // fuck boundaries
 {
     int k=0, Nj = s.getNj(), Ni = s.getNi();
     float val;
@@ -369,7 +402,7 @@ void navier::paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels
             }
             else
             {
-                val = s(i, j);
+                val = (s(i, j) - min)/(max - min) * 255;
                 pixels[k  ] = val > 255 ? 255 : (sf::Uint8)val * r;
                 pixels[k+1] = val > 255 ? 255 : (sf::Uint8)val * g;
                 pixels[k+2] = val > 255 ? 255 : (sf::Uint8)val * b;
