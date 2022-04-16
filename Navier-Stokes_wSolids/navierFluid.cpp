@@ -99,34 +99,34 @@ void navier::fluid::drawBorders(std::initializer_list<line> Lines)
     }
     solidCoordinates.fill(solidMap);
 }
-void navier::fluid::addS(int i, int j, int radius, float val)
+void navier::fluid::addS(int i, int j, int radius, float val, float maxVal)
 {
-    addSource(radius, s, i, j, 0, val, solidCoordinates, solidMap);
+    addSource(radius, s, i, j, 0, val, maxVal, solidCoordinates, solidMap);
 }
-void navier::fluid::addP(int i, int j, int radius, float val)
+void navier::fluid::addP(int i, int j, int radius, float val, float maxVal)
 {
-    addSource(radius, p, i, j, 0, val, solidCoordinates, solidMap);
+    addSource(radius, p, i, j, 0, val, maxVal, solidCoordinates, solidMap);
 }
-void navier::fluid::addV(int i, int j, int radius, float uVal, float vVal)
+void navier::fluid::addV(int i, int j, int radius, float uVal, float vVal, float maxValU, float maxValV)
 {
-    addSource(radius, u, i, j, 1, uVal, solidCoordinates, solidMap);
-    addSource(radius, v, i, j, 2, vVal, solidCoordinates, solidMap);
+    addSource(radius, u, i, j, 1, uVal, maxValU, solidCoordinates, solidMap);
+    addSource(radius, v, i, j, 2, vVal, maxValV, solidCoordinates, solidMap);
 }
 void navier::fluid::vStep()
 {
     swapV(u, u0); swapV(v, v0);
-    diffuse(2, dt, visc, v, v0, solidCoordinates, solidMap); diffuse(1, dt, visc, u, u0, solidCoordinates, solidMap);
-    project(u, v, p, v0, solidCoordinates, solidMap); // MOTHERFUCKER
+    diffuse(boundV, 2, dt, visc, v, v0, solidCoordinates, solidMap); diffuse(boundU, 1, dt, visc, u, u0, solidCoordinates, solidMap);
+    project(boundU, boundV, boundP, u, v, p, v0, solidCoordinates, solidMap); // MOTHERFUCKER
     swapV(u, u0); swapV(v, v0);
-    advect(2, dt, v, v0, u0, v0, solidCoordinates, solidMap); advect(1, dt, u, u0, u0, v0, solidCoordinates, solidMap);
-    project(u, v, p, v0, solidCoordinates, solidMap);
+    advect(boundV, 2, dt, v, v0, u0, v0, solidCoordinates, solidMap); advect(boundU, 1, dt, u, u0, u0, v0, solidCoordinates, solidMap);
+    project(boundU, boundV, boundP, u, v, p, v0, solidCoordinates, solidMap);
 }
 void navier::fluid::sStep()
 {
     swapV(s, s0); 
-    diffuse(0, dt, diff, s, s0, solidCoordinates, solidMap);
+    diffuse(boundS, 0, dt, diff, s, s0, solidCoordinates, solidMap);
     swapV(s, s0); 
-    advect(0, dt, s, s0, u, v, solidCoordinates, solidMap);
+    advect(boundS, 0, dt, s, s0, u, v, solidCoordinates, solidMap);
     dissipate(s, dt, disip);
 }
 void navier::fluid::step(float dt_)
@@ -194,7 +194,7 @@ void navier::simulation::start()
                 ip = (int)y+1; jp = (int)x+1;
                 i = ip > 1 ? (ip < Ni-2 ? ip : Ni-2) : 1;	j = jp > 1 ? (jp < Nj-2 ? jp : Nj-2) : 1;	
 
-                Fluid.addV(i, j, radius, mouseV*(x-x0), -mouseV*(y-y0));
+                Fluid.addV(i, j, radius, mouseV*(x-x0), -mouseV*(y-y0), maxAddU, maxAddV);
                 
                 pos0 = sf::Mouse::getPosition(window);
                 y0 = (pos.y * factorI), x0 = (pos.x * factorJ);
@@ -207,14 +207,14 @@ void navier::simulation::start()
             pos = sf::Mouse::getPosition(window);
             ip = (int)(pos.y * factorI)+1; jp = (int)(pos.x * factorJ)+1;
             i = ip > 1 ? (ip < Ni-2 ? ip : Ni-2) : 1;	j = jp > 1 ? (jp < Nj-2 ? jp : Nj-2) : 1;	
-            Fluid.addS(i, j, radius, dt * mouseS);
+            Fluid.addS(i, j, radius, dt * mouseS, maxAddS);
         } 
         if (sf::Mouse::isButtonPressed(sf::Mouse::Middle)) 
         {
             pos = sf::Mouse::getPosition(window);
             ip = (int)(pos.y * factorI)+1; jp = (int)(pos.x * factorJ)+1;
             i = ip > 1 ? (ip < Ni-2 ? ip : Ni-2) : 1;	j = jp > 1 ? (jp < Nj-2 ? jp : Nj-2) : 1;	
-            Fluid.addP(i, j, radius, dt * mouseP);
+            Fluid.addP(i, j, radius, dt * mouseP, maxAddP);
         } 
 
         window.clear(sf::Color::Black);
@@ -255,7 +255,7 @@ void navier::simulation::start()
 
 
 
-void navier::advect(int b, float dt, grid &s, grid &s0, grid &u, grid &v, coordinates &solidCoordinates, grid &solidMap)
+void navier::advect(int b, int solidB, float dt, grid &s, grid &s0, grid &u, grid &v, coordinates &solidCoordinates, grid &solidMap)
 {
     int i, j, iT, jL, iB, jR, Nj = s.getNj(), Ni = s.getNi(); // assume velocity in cells/s
     float ip, jp, interpX, interpY;
@@ -273,9 +273,9 @@ void navier::advect(int b, float dt, grid &s, grid &s0, grid &u, grid &v, coordi
         }
     }
     boundaries(b, s);
-    lineBoundaries(b, s, solidCoordinates, solidMap);
+    lineBoundaries(solidB, s, solidCoordinates, solidMap);
 }
-void navier::diffuse(int b, float dt, float diff, grid &s, grid &s0, coordinates &solidCoordinates, grid &solidMap)
+void navier::diffuse(int b, int solidB, float dt, float diff, grid &s, grid &s0, coordinates &solidCoordinates, grid &solidMap)
 {
     int i, j, k, Nj = s.getNj(), Ni = s.getNi();
     float a = dt * diff;
@@ -291,7 +291,7 @@ void navier::diffuse(int b, float dt, float diff, grid &s, grid &s0, coordinates
             }
         }
         boundaries(b, s);
-        lineBoundaries(b, s, solidCoordinates, solidMap);
+        lineBoundaries(solidB, s, solidCoordinates, solidMap);
     }
 
 }
@@ -304,7 +304,9 @@ void navier::dissipate(grid &s, double t, float disip)
 }
 void navier::boundaries(int b, grid &s) // 1 for -nx
 { 
+
     int i, j, Nj = s.getNj(), Ni = s.getNi();
+    if (b < 3) {
     for (i=1; i < Ni-1; i++)
     {
         s(i, 0) = b==1 ? -s(i, 1): s(i, 1);
@@ -319,6 +321,8 @@ void navier::boundaries(int b, grid &s) // 1 for -nx
     s(Ni-1, Nj-1) = 0.5 * (s(Ni-2, Nj-1) + s(Ni-1, Nj-2));
     s(0, Nj-1) = 0.5 * (s(1, Nj-1) + s(0, Nj-2));
     s(Ni-1, 0) = 0.5 * (s(Ni-1, 1) + s(Ni-2, 0));
+    }
+    else { for (i=1; i < Ni-1; i++) { s(i, 0) = 0; s(i, Nj-1) = 0; } for (j=1; j < Nj-1; j++) { s(0, j) = 0; s(Ni-1, j) = 0; } }
 }
 void navier::lineBoundaries(int b, grid &s, coordinates &solidCoordinates, grid &solidMap)
 {
@@ -344,7 +348,7 @@ void navier::lineBoundaries(int b, grid &s, coordinates &solidCoordinates, grid 
     }
 
 }
-void navier::project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoordinates, grid &solidMap)
+void navier::project(int bu, int bv, int bp, grid &u, grid &v, grid &p, grid &div, coordinates &solidCoordinates, grid &solidMap)
 {
     int i, j, k, Nj = u.getNj(), Ni = u.getNi();
     for (i=1; i<Ni-1; i++)
@@ -356,8 +360,8 @@ void navier::project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoo
             //p(i, j) = 0;  
         }
     }
-    boundaries(0, p); lineBoundaries(0, p, solidCoordinates, solidMap); 
-    boundaries(0, div); lineBoundaries(0, div, solidCoordinates, solidMap);
+    boundaries(bp, p); lineBoundaries(0, p, solidCoordinates, solidMap); 
+    boundaries(bp, div); lineBoundaries(0, div, solidCoordinates, solidMap);
     for (k=0; k<20; k++)
     {
         for (i=1; i<Ni-1; i++)
@@ -368,7 +372,7 @@ void navier::project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoo
 
             }
         }
-        boundaries(0, p);
+        boundaries(bp, p);
         lineBoundaries(0, p, solidCoordinates, solidMap);
     }
     for (i=1; i<Ni-1; i++)
@@ -380,8 +384,8 @@ void navier::project(grid &u, grid &v, grid &p, grid &div, coordinates &solidCoo
             
         }
     }
-    boundaries(1, u); lineBoundaries(1, u, solidCoordinates, solidMap);
-    boundaries(2, v); lineBoundaries(2, v, solidCoordinates, solidMap);
+    boundaries(bu, u); lineBoundaries(1, u, solidCoordinates, solidMap);
+    boundaries(bv, v); lineBoundaries(2, v, solidCoordinates, solidMap);
 }
 
 void navier::paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels, float  r, float g, float b, int a, float max, float min) // fuck boundaries
@@ -412,7 +416,7 @@ void navier::paintPixels(grid &s, grid &solidMap, std::vector<sf::Uint8> &pixels
         }
     }
 }
-void navier::addSource(int radius, grid &s, int i, int j, int b, float val, coordinates &solidCoordinates, grid &solidMap) // assume solid walls, Ni is the whole Ni, i and j too 
+void navier::addSource(int radius, grid &s, int i, int j, int b, float val, float maxVal, coordinates &solidCoordinates, grid &solidMap) // assume solid walls, Ni is the whole Ni, i and j too 
 {
     int Nj = s.getNj(), Ni = s.getNi();
     int spaceBot = (Ni-2) - i;
@@ -423,14 +427,16 @@ void navier::addSource(int radius, grid &s, int i, int j, int b, float val, coor
     int radTop   = spaceTop   > radius ? radius :   spaceTop;
     int radLeft  = spaceLeft  > radius ? radius :  spaceLeft;
     int radRight = spaceRight > radius ? radius : spaceRight;
+    float addVal = (val > 0)  ?  ( (val < maxVal) ? val : maxVal ) : ( (val > -maxVal) ? val : -maxVal );
     for (int ik = i-radTop; ik <= i + radBot; ik++)
     {
         for (int jk = j-radLeft; jk <= j + radRight; jk++)
         {
-            s(ik, jk) += val;
+            s(ik, jk) += addVal;
             //std::cout << "val is now "<< S(ik, jk)  << "\n";
         } 
     }
+    /*
     boundaries(b, s);
-    lineBoundaries(b, s, solidCoordinates, solidMap);
+    lineBoundaries(b, s, solidCoordinates, solidMap);*/
 }

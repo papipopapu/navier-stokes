@@ -25,10 +25,11 @@ int main()
     line back(i0, j0, width+1, true, thick), top(i0-width, j0-length, length, false, thick), bot(i0, j0-length, length, false, thick)
        , tinyTop(i0+tiny-width, j0-length, tiny, true, thick), tinyBot(i0, j0-length, tiny, true, thick); 
     myFluid.drawBorders({top, back, bot, tinyTop, tinyBot});
+    myFluid.boundU = 0; myFluid.boundV = 0; myFluid.boundS = 3; myFluid.boundP = 3;
     simulation mySimulation(myFluid);
-    mySimulation.g = 1;
+    mySimulation.r= 1;
     mySimulation.radius = 5;
-    mySimulation.draw = 3;
+    mySimulation.draw = 0;
     mySimulation.initialConditions = &CI;
     mySimulation.screenFactor = 5;
     mySimulation.periodicV = &g;
