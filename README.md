@@ -1,2 +1,2 @@
 # Navier-Stokes
-It had not been done before, now it has... 
+Fluid simulation in C++, just used as save.
