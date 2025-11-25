@@ -1,0 +1,15 @@
+# Build artifacts
+build/
+*.o
+*.obj
+fluid_simulation
+fluid_sim
+
+# CodeQL artifacts
+_codeql_detected_source_root
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
