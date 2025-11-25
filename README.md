@@ -4,9 +4,6 @@
 
 A robust C++ implementation of incompressible fluid dynamics using the Navier-Stokes equations with support for solid obstacles and real-time interaction. Created to study the behavior of ring vortices.
 
-## Architecture Overview
-
-
 ### Core Components
 
 1. **Grid** (`Grid.h/cpp`)
@@ -179,5 +176,6 @@ MIT License
 ## Credits
 
 Original implementation refactored with modern C++ practices and professional architecture patterns.
+
 
 
