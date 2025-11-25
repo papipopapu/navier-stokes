@@ -18,19 +18,19 @@ find_package(SFML 2.5 COMPONENTS graphics window system REQUIRED)
 
 # Source files
 set(SOURCES
-    main.cpp
-    Grid.cpp
-    FluidSolver.cpp
-    Renderer.cpp
-    Simulation.cpp
+    core/main.cpp
+    core/Grid.cpp
+    core/FluidSolver.cpp
+    core/Renderer.cpp
+    core/Simulation.cpp
 )
 
 set(HEADERS
-    Config.h
-    Grid.h
-    FluidSolver.h
-    Renderer.h
-    Simulation.h
+    core/Config.h
+    core/Grid.h
+    core/FluidSolver.h
+    core/Renderer.h
+    core/Simulation.h
 )
 
 # Create executable
@@ -45,7 +45,7 @@ target_link_libraries(fluid_simulation
 )
 
 # Include directories
-target_include_directories(fluid_simulation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(fluid_simulation PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/core)
 
 # Installation
 install(TARGETS fluid_simulation DESTINATION bin)
