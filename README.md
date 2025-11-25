@@ -1,4 +1,4 @@
-![Evolution of a simulated ring vortex](timeline.jpg)
+![Evolution of a simulated ring vortex](images/timeline.jpg)
 
 # Navier-Stokes Fluid Simulation 
 
@@ -50,11 +50,12 @@ A robust C++ implementation of incompressible fluid dynamics using the Navier-St
 ### Compilation
 ```bash
 g++ -std=c++17 -o fluid_sim \
-    main.cpp \
-    Grid.cpp \
-    FluidSolver.cpp \
-    Renderer.cpp \
-    Simulation.cpp \
+    core/main.cpp \
+    core/Grid.cpp \
+    core/FluidSolver.cpp \
+    core/Renderer.cpp \
+    core/Simulation.cpp \
+    -I core \
     -lsfml-graphics -lsfml-window -lsfml-system
 ```
 
@@ -151,12 +152,16 @@ Where:
 
 ```
 navier-stokes-main/
-├── Config.h              # Configuration constants
-├── Grid.h/cpp            # 2D grid container
-├── FluidSolver.h/cpp     # Navier-Stokes solver
-├── Renderer.h/cpp        # Visualization layer
-├── Simulation.h/cpp      # Main simulation controller
-├── main.cpp              # Example application
+├── core/
+│   ├── Config.h          # Configuration constants
+│   ├── Grid.h/cpp        # 2D grid container
+│   ├── FluidSolver.h/cpp # Navier-Stokes solver
+│   ├── Renderer.h/cpp    # Visualization layer
+│   ├── Simulation.h/cpp  # Main simulation controller
+│   └── main.cpp          # Example application
+├── images/
+│   └── timeline.jpg      # Simulation timeline image
+├── CMakeLists.txt        # Build configuration
 └── README.md             # This file
 ```
 
