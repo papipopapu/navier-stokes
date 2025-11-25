@@ -1,10 +1,9 @@
-# Navier-Stokes Fluid Simulation - Refactored
+# Navier-Stokes Fluid Simulation 
 
-A professional C++ implementation of incompressible fluid dynamics using the Navier-Stokes equations with support for solid obstacles and real-time interaction.
+A robust C++ implementation of incompressible fluid dynamics using the Navier-Stokes equations with support for solid obstacles and real-time interaction. Created to study the behavior of ring vortices.
 
 ## Architecture Overview
 
-The project has been refactored following modern C++ best practices and SOLID principles:
 
 ### Core Components
 
@@ -43,25 +42,6 @@ The project has been refactored following modern C++ best practices and SOLID pr
 
 ## Key Improvements
 
-### Design Patterns
-✅ **Separation of Concerns**: Solver, rendering, and interaction are independent  
-✅ **Single Responsibility**: Each class has one clear purpose  
-✅ **Dependency Inversion**: Using std::function instead of raw function pointers  
-✅ **Encapsulation**: Private members with proper accessors  
-✅ **RAII**: Automatic resource management with smart pointers  
-
-### Code Quality
-✅ **Modern C++**: std::function, std::clamp, range-based loops, structured bindings  
-✅ **Const Correctness**: Proper const methods and parameters  
-✅ **Clear Naming**: Descriptive variable and method names (no more single letters)  
-✅ **Documentation**: Doxygen-style comments  
-✅ **Type Safety**: enum class instead of integers  
-✅ **Error Handling**: Bounds checking and exception handling  
-
-### Performance
-✅ **Memory Efficiency**: Contiguous storage, cache-friendly access  
-✅ **Reduced Copying**: Using references and move semantics  
-✅ **Optimized Loops**: Iterator-based where appropriate  
 
 ## Building the Project
 
@@ -190,23 +170,6 @@ navier-stokes-main/
 - **Iterations**: 20 Gauss-Seidel iterations per solve (configurable)
 - **FPS**: Default 60, adjustable based on performance needs
 
-## Future Enhancements
-
-Potential improvements for the future:
-- [ ] Multigrid solver for faster convergence
-- [ ] GPU acceleration (CUDA/OpenCL)
-- [ ] Adaptive time stepping (CFL condition)
-- [ ] Save/load simulation states
-- [ ] More obstacle shapes (circles, arbitrary polygons)
-- [ ] Turbulence modeling
-- [ ] Multi-threaded solver
-
-## References
-
-- **Jos Stam**: "Real-Time Fluid Dynamics for Games" (2003)
-- **Bridson**: "Fluid Simulation for Computer Graphics" (2015)
-- **Griebel et al.**: "Numerical Simulation in Fluid Dynamics" (1998)
-
 ## License
 
 MIT License
@@ -214,3 +177,4 @@ MIT License
 ## Credits
 
 Original implementation refactored with modern C++ practices and professional architecture patterns.
+
