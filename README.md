@@ -1,3 +1,5 @@
+![Evolution of a simulated ring vortex](timeline.jpg)
+
 # Navier-Stokes Fluid Simulation 
 
 A robust C++ implementation of incompressible fluid dynamics using the Navier-Stokes equations with support for solid obstacles and real-time interaction. Created to study the behavior of ring vortices.
@@ -177,4 +179,5 @@ MIT License
 ## Credits
 
 Original implementation refactored with modern C++ practices and professional architecture patterns.
+
 
