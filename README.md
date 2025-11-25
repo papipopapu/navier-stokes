@@ -39,8 +39,6 @@ A robust C++ implementation of incompressible fluid dynamics using the Navier-St
    - Visualization settings
    - Interaction defaults
 
-## Key Improvements
-
 
 ## Building the Project
 
@@ -176,6 +174,7 @@ MIT License
 ## Credits
 
 Original implementation refactored with modern C++ practices and professional architecture patterns.
+
 
 
 
