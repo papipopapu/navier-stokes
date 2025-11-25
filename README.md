@@ -176,9 +176,7 @@ navier-stokes-main/
 
 MIT License
 
-## Credits
 
-Original implementation refactored with modern C++ practices and professional architecture patterns.
 
 
 
