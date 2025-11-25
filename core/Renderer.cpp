@@ -118,8 +118,15 @@ void Renderer::updatePixels(const Grid& field, const Grid& solidMap, const Grid*
 }
 
 sf::Color Renderer::mapValueToColor(float value, float min, float max) const {
+    // Ensure we have a valid range to avoid division by zero
+    float range = max - min;
+    if (std::abs(range) < 1e-6f) {
+        max = min + 1.0f;
+        range = 1.0f;
+    }
+    
     // Normalize value to [0, 1]
-    float normalized = (value - min) / (max - min);
+    float normalized = (value - min) / range;
     normalized = std::clamp(normalized, 0.0f, 1.0f);
     
     if (m_colorMap.useGradient) {
