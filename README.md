@@ -190,7 +190,7 @@ Classical theory for ring vortices provides the propagation velocity:
 
 $$U = \frac{\omega_0 a^2}{4 R} \left(\ln\frac{8R}{a} - \frac{1}{4}\right)$$
 
-where $a$ is the characteristic vortex core radius, $R$ is the toroidal radius, and $\omega_0$ is the vorticity. This model assumes uniform vorticity and $a \ll R$. Our 2D simulations deviate from this regime as these approximations are not met.
+where $a$ is the characteristic vortex core radius, $R$ is the toroidal radius, and $\omega_0$ is the vorticity. This model assumes uniform vorticity and $a \ll R$. Our 2D simulations (which approximate cross-sectional behavior of 3D ring vortices) deviate from this regime as these approximations are not met.
 
 ### Empirical Relationships
 
@@ -208,9 +208,9 @@ where $U$ is the translation velocity and $E_0$ is the initial energy input.
 Approximately **linear relationship**:
 $$U \propto r_{\text{mean}}$$
 
-where $r_{\text{mean}} = (a+b)/2$ is the mean radius of the vortex cross-section (with inner radius $a$ and outer radius $b$).
+where $r_{\text{mean}} = (a+b)/2$ is the mean radius of the vortex cross-section (with inner radius $a$ and outer radius $b$ in the 2D simulation).
 
-These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$, the theoretical formula becomes:
+These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$ (i.e., the toroidal radius is proportional to the core radius), the theoretical formula becomes:
 
 $$U = \frac{\omega_0 a}{4 k}\left(\ln(8k) - \frac{1}{4}\right)$$
 
@@ -225,7 +225,7 @@ where $\omega$ is the vorticity.
 
 ### Conclusion
 
-While results do not conform to the simplified theoretical model, this is expected as our 2D system does not satisfy the approximations ($a \ll R$, uniform vorticity) assumed by that model. The observed relationships reveal more complex behavior than the idealized case.
+While results do not conform to the simplified theoretical model, this is expected as our 2D simulations (approximating the cross-sectional dynamics of 3D ring vortices) do not satisfy the approximations ($a \ll R$, uniform vorticity) assumed by that model. The observed relationships reveal more complex behavior than the idealized case.
 
 ## Project Structure
 
