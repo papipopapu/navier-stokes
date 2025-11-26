@@ -148,6 +148,130 @@ Where:
 3. **Projection**: Helmholtz decomposition to enforce incompressibility
 4. **Solid Boundaries**: No-slip/free-slip conditions at obstacles
 
+## Solver Theory
+
+### Motivation and Physical Background
+
+The study of vortex dynamics and structure in fluids is crucial for weather prediction and engineering design of systems operating in fluid environments. Given the complexity of reality, theoretical models based on empirical methods are necessary to study turbulent flow behavior and find regular patterns and predictable trends in nature.
+
+Von Kármán vortex streets and ring vortices are regularly observed in natural phenomena, from atmospheric patterns around the Canary Islands to historical events. This project aims to explain such phenomena through simplified 2D simulations.
+
+A vortex is a rotating air current forming a spiral. In particular, vortices are spirals of turbulent currents. According to Bernoulli's principle, air pressure (or any other fluid) in a vortex is lower in the central region, increasing as we move away from the center.
+
+Ring vortices arise when fluid is propelled with a certain velocity in a specific direction, forming characteristic mushroom shapes with toroidal symmetry due to lower pressure as the fluid advances compared to external pressure, causing rotation. Von Kármán vortex streets are repetitive patterns of swirling vortices caused by vortex shedding, responsible for unstable boundary layer separation in fluid flow around solids.
+
+### Computational Approach
+
+The simulation solves the Navier-Stokes equations for both the velocity field:
+
+```
+∂u/∂t = -(u·∇)u - (1/ρ)∇p + ν∇²u + f     (Eq. 1)
+```
+
+and for scalar fields (e.g., dye density):
+
+```
+∂s/∂t = -(u·∇)s + κ∇²s + S                (Eq. 2)
+```
+
+The implementation uses an **Eulerian** approach, computing relevant quantities at fixed points rather than tracking particle trajectories (Lagrangian Particle Tracking). All methods are based on finite differences, working with a discretized environment that provides extensive equation systems.
+
+### MAC Grid Structure
+
+The simulation employs a **MAC (Marker and Cell)** grid structure:
+- Scalar quantities are computed and stored at cell centers
+- Vector components are stored at cell faces (u-component on left/right faces, v-component on top/bottom faces)
+- This staggered arrangement improves accuracy of discretized operators
+- Uniform distribution simplifies operator effects and enables value interpolation at any point in the fluid
+
+### Operator Splitting Method
+
+Each iteration can be viewed as the composition of operators:
+
+```
+u^(n+1) = P ∘ F ∘ D ∘ A(u^n)       (velocity)
+s^(n+1) = S ∘ D ∘ A(s^n)           (scalar)
+```
+
+Where:
+- **A (Advection)**: Represents the term (u·∇), the fluid moving through itself
+- **D (Diffusion)**: Corresponds to the Laplacian term ∇²u
+- **F (Forces)** and **S (Sources)**: Addition of external forces and scalar sources
+- **P (Projection)**: Applies pressure gradient and enforces incompressibility
+
+#### Advection (Operator A)
+
+Uses a **semi-Lagrangian backward trace** for stability. For each cell and each physical quantity:
+
+```
+X_prev = X_cell - u^old · Δt
+Q^new = interpolate(X_prev)
+```
+
+This backward tracing is more stable than forward methods. The implementation supports both Euler and Runge-Kutta 4 methods.
+
+#### Diffusion (Operator D)
+
+To maintain stability, an **implicit formulation** is used:
+
+```
+Q^old = Q^new + Δt · λ∇²Q^new
+```
+
+This creates a system with as many equations as fluid cells, solved using the **Gauss-Seidel relaxation method**. Note that numerical diffusion often arises naturally and may not always need explicit treatment.
+
+#### Projection (Operator P)
+
+The projection step introduces the pressure gradient term and enforces incompressibility using the **Helmholtz-Hodge decomposition theorem**, which decomposes any vector field into an irrotational and an incompressible component:
+
+```
+w = ∇Φ + curl(A)
+```
+
+Considering that after applying all operators except P, the velocity field may be compressible, we associate the desired velocity with the incompressible component:
+
+```
+w ≡ u_old = ∇p + u_new
+u_new = u_old - ∇p  ⟹  ∇²p = ∇·u_old   (Eq. 3)
+```
+
+Solving this **Poisson equation** (Eq. 3) yields the pressure field p that makes the velocity incompressible. The system is solved both by Gauss-Seidel iteration and by direct sparse matrix inversion (more accurate but slower).
+
+#### Boundary Conditions
+
+Throughout this process, boundary conditions are applied at cells bordering solids or simulation boundaries. For solid walls, the perpendicular velocity component at the boundary is set to zero.
+
+## Ring Vortex Results
+
+Contrasting with basic theory about ring vortices, which provides the expression:
+
+```
+U = (πω₀a²)/(4πR) · (ln(8R/a) - 1/4)
+```
+
+where:
+- **a**: mean radius of small vortices
+- **R**: toroidal radius
+- **ω₀**: vorticity
+
+Our simulations deviate from this theoretical regime. The model assumes uniform vorticity in each of the two small vortices and that their radius is much smaller than the toroidal radius R (a << R). In our 2D simulations, these approximations are not reasonable.
+
+### Key Findings
+
+The most studied quantity is **propagation velocity**, which shows close relationships with other quantities:
+
+1. **Velocity vs. Energy**: Approximately **linear relationship** between translation velocity and initial energy input
+
+2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius ((a+b)/2)
+
+   These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume a and R are proportional (R = k·a), the theoretical formula becomes U = (πω₀a)/(4πk)·(ln(8k) - 1/4), which is indeed linear with a, though this remains conjectural.
+
+3. **Velocity vs. Vorticity**: The relationship shows approximately **U ∝ √ω**, where ω is vorticity and U is translation velocity
+
+### Conclusion
+
+While results do not conform to the simplified theoretical model, this is expected given that our system does not meet the approximations assumed by that model. The relationships obtained escape this simplification, showing behavior more complex than the idealized case.
+
 ## Project Structure
 
 ```
