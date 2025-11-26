@@ -188,7 +188,7 @@ to obtain the pressure field that makes the velocity divergence-free.
 
 Classical theory for ring vortices provides the propagation velocity:
 
-$$U = \frac{\pi\omega_0 a^2}{4\pi R} \left(\ln\frac{8R}{a} - \frac{1}{4}\right)$$
+$$U = \frac{\omega_0 a^2}{4 R} \left(\ln\frac{8R}{a} - \frac{1}{4}\right)$$
 
 where $a$ is the characteristic vortex core radius, $R$ is the toroidal radius, and $\omega_0$ is the vorticity. This model assumes uniform vorticity and $a \ll R$. Our 2D simulations deviate from this regime as these approximations are not met.
 
@@ -212,7 +212,7 @@ where $r_{\text{mean}} = (a+b)/2$ is the mean radius of the vortex cross-section
 
 These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$, the theoretical formula becomes:
 
-$$U = \frac{\pi\omega_0 a}{4\pi k}\left(\ln(8k) - \frac{1}{4}\right)$$
+$$U = \frac{\omega_0 a}{4 k}\left(\ln(8k) - \frac{1}{4}\right)$$
 
 which is indeed linear with $a$, though this remains conjectural.
 
