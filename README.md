@@ -150,129 +150,82 @@ Where:
 
 ## Solver Theory
 
-### Motivation and Physical Background
+### Introduction
 
-The study of vortex dynamics and structure in fluids is crucial for weather prediction and engineering design of systems operating in fluid environments. Given the complexity of reality, theoretical models based on empirical methods are necessary to study turbulent flow behavior and find regular patterns and predictable trends in nature.
+Ring vortices are toroidal structures that form when fluid is impulsively ejected through an opening. The vorticity at the boundary rolls up due to velocity gradients, creating a self-propagating vortex ring. This project studies ring vortices through 2D fluid simulations.
 
-Von Kármán vortex streets and ring vortices are regularly observed in natural phenomena, from atmospheric patterns around the Canary Islands to historical events. This project aims to explain such phenomena through simplified 2D simulations.
+### Computational Method
 
-A vortex is a region of rotating fluid flow. According to Bernoulli's principle, the pressure in a vortex is lower in the central region where the velocity is higher, increasing as we move away from the center.
+The simulation solves the incompressible Navier-Stokes equations using operator splitting. For the velocity field:
 
-Ring vortices arise when fluid is propelled through an opening or impulsively, forming characteristic toroidal (doughnut-shaped) structures. The vorticity at the boundary of the jet or puff rolls up into a ring due to velocity gradients, creating a self-propagating vortex with circulation around the ring's cross-section. Von Kármán vortex streets are repetitive patterns of swirling vortices caused by vortex shedding, responsible for unstable boundary layer separation in fluid flow around solids.
-
-### Computational Approach
-
-The simulation solves the incompressible Navier-Stokes equations for both the velocity field:
-
-```
-∂u/∂t = -(u·∇)u - (1/ρ)∇p + ν∇²u + f     (Eq. 1)
-```
-
-(In the non-dimensional form or when ρ=1, this simplifies to: ∂u/∂t + (u·∇)u = -∇p + ν∇²u + f)
+$$\frac{\partial \mathbf{u}}{\partial t} = -(\mathbf{u}\cdot\nabla)\mathbf{u} - \frac{1}{\rho}\nabla p + \nu \nabla^2\mathbf{u} + \mathbf{f}$$
 
 and for scalar fields (e.g., dye density):
 
-```
-∂s/∂t = -(u·∇)s + κ∇²s + S                (Eq. 2)
-```
+$$\frac{\partial s}{\partial t} = -(\mathbf{u}\cdot\nabla)s + \kappa \nabla^2 s + S$$
 
-The implementation uses an **Eulerian** approach, computing relevant quantities at fixed points rather than tracking particle trajectories (Lagrangian Particle Tracking). All methods are based on finite differences, working with a discretized environment that provides extensive equation systems.
+The implementation uses an **Eulerian** approach with finite differences on a **MAC (Marker and Cell)** grid structure, where scalars are stored at cell centers and velocity components at cell faces.
 
-### MAC Grid Structure
+Each time step applies a sequence of operators:
 
-The simulation employs a **MAC (Marker and Cell)** grid structure:
-- Scalar quantities are computed and stored at cell centers
-- Vector components are stored at cell faces (u-component on left/right faces, v-component on top/bottom faces)
-- This staggered arrangement improves accuracy of discretized operators
-- Uniform distribution simplifies operator effects and enables value interpolation at any point in the fluid
-
-### Operator Splitting Method
-
-Each iteration can be viewed as the composition of operators:
-
-```
-u^(n+1) = P ∘ F ∘ D ∘ A(u^n)       (velocity)
-s^(n+1) = S ∘ D ∘ A(s^n)           (scalar)
-```
+$$\mathbf{u}^{n+1} = \mathbf{P} \circ \mathbf{F} \circ \mathbf{D} \circ \mathbf{A}(\mathbf{u}^n)$$
 
 Where:
-- **A (Advection)**: Represents the term (u·∇), the fluid moving through itself
-- **D (Diffusion)**: Corresponds to the Laplacian term ∇²u
-- **F (Forces)** and **S (Sources)**: Addition of external forces and scalar sources
-- **P (Projection)**: Applies pressure gradient and enforces incompressibility
+- **A (Advection)**: Semi-Lagrangian backward trace with interpolation
+- **D (Diffusion)**: Implicit solver using Gauss-Seidel relaxation
+- **F (Forces)**: Addition of external forces
+- **P (Projection)**: Helmholtz-Hodge decomposition to enforce incompressibility
 
-#### Advection (Operator A)
+The projection step solves the Poisson equation:
 
-Uses a **semi-Lagrangian backward trace** for stability. For each cell and each physical quantity:
+$$\nabla^2 p = \nabla \cdot \mathbf{u}$$
 
-```
-X_prev = X_cell - u^old · Δt
-Q^new = interpolate(X_prev)
-```
-
-This backward tracing is more stable than forward methods. The implementation supports both Euler and Runge-Kutta 4 methods.
-
-#### Diffusion (Operator D)
-
-To maintain stability, an **implicit formulation** is used:
-
-```
-Q^old = Q^new + Δt · ν∇²Q^new
-```
-
-where ν is the diffusion coefficient (kinematic viscosity for velocity, or diffusivity κ for scalar fields). This creates a system with as many equations as fluid cells, solved using the **Gauss-Seidel relaxation method**. Note that numerical diffusion often arises naturally and may not always need explicit treatment.
-
-#### Projection (Operator P)
-
-The projection step introduces the pressure gradient term and enforces incompressibility using the **Helmholtz-Hodge decomposition theorem**, which decomposes any vector field into an irrotational and an incompressible component:
-
-```
-w = ∇Φ + curl(A)
-```
-
-Considering that after applying all operators except P, the velocity field may be compressible, we associate the desired velocity with the incompressible component:
-
-```
-w ≡ u_old = ∇p + u_new
-u_new = u_old - ∇p  ⟹  ∇²p = ∇·u_old   (Eq. 3)
-```
-
-Solving this **Poisson equation** (Eq. 3) yields the pressure field p that makes the velocity incompressible. The system is solved both by Gauss-Seidel iteration and by direct sparse matrix inversion (more accurate but slower).
-
-#### Boundary Conditions
-
-Throughout this process, boundary conditions are applied at cells bordering solids or simulation boundaries. For solid walls, the perpendicular velocity component at the boundary is set to zero.
+to obtain the pressure field that makes the velocity divergence-free.
 
 ## Ring Vortex Results
 
-Contrasting with basic theory about ring vortices, which provides the expression:
+### Theoretical Background
 
-```
-U = (πω₀a²)/(4πR) · (ln(8R/a) - 1/4)
-```
+Classical theory for ring vortices provides the propagation velocity:
 
-where:
-- **a**: characteristic vortex core radius
-- **R**: toroidal radius
-- **ω₀**: vorticity
+$$U = \frac{\pi\omega_0 a^2}{4\pi R} \left(\ln\frac{8R}{a} - \frac{1}{4}\right)$$
 
-Our simulations deviate from this theoretical regime. The model assumes uniform vorticity in each of the two small vortices and that their radius is much smaller than the toroidal radius R (a << R). In our 2D simulations, these approximations are not reasonable.
+where $a$ is the characteristic vortex core radius, $R$ is the toroidal radius, and $\omega_0$ is the vorticity. This model assumes uniform vorticity and $a \ll R$. Our 2D simulations deviate from this regime as these approximations are not met.
 
-### Key Findings
+### Empirical Relationships
 
-The most studied quantity is **propagation velocity**, which shows close relationships with other quantities:
+The most important quantity studied is the **ring propagation velocity**, which exhibits strong correlations with other physical parameters:
 
-1. **Velocity vs. Energy**: Approximately **linear relationship** between translation velocity and initial energy input
+#### 1. Velocity vs. Energy
 
-2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius. In our observations, the vortex cross-section has inner and outer radii forming a ring, and we measure the mean radius (a+b)/2 where a and b are the inner and outer radii respectively.
+Approximately **linear relationship**:
+$$U \propto E_0$$
 
-   These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume the characteristic radius a and toroidal radius R are proportional (R = k·a), the theoretical formula becomes U = (πω₀a)/(4k)·(ln(8k) - 1/4), which is indeed linear with a, though this remains conjectural.
+where $U$ is the translation velocity and $E_0$ is the initial energy input.
 
-3. **Velocity vs. Vorticity**: The relationship shows approximately **U ∝ √ω**, where ω is vorticity and U is translation velocity
+#### 2. Velocity vs. Mean Radius
+
+Approximately **linear relationship**:
+$$U \propto r_{\text{mean}}$$
+
+where $r_{\text{mean}} = (a+b)/2$ is the mean radius of the vortex cross-section (with inner radius $a$ and outer radius $b$).
+
+These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$, the theoretical formula becomes:
+
+$$U = \frac{\pi\omega_0 a}{4\pi k}\left(\ln(8k) - \frac{1}{4}\right)$$
+
+which is indeed linear with $a$, though this remains conjectural.
+
+#### 3. Velocity vs. Vorticity
+
+The relationship shows approximately:
+$$U \propto \sqrt{\omega}$$
+
+where $\omega$ is the vorticity.
 
 ### Conclusion
 
-While results do not conform to the simplified theoretical model, this is expected given that our system does not meet the approximations assumed by that model. The relationships obtained escape this simplification, showing behavior more complex than the idealized case.
+While results do not conform to the simplified theoretical model, this is expected as our 2D system does not satisfy the approximations ($a \ll R$, uniform vorticity) assumed by that model. The observed relationships reveal more complex behavior than the idealized case.
 
 ## Project Structure
 
