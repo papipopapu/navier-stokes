@@ -156,9 +156,9 @@ The study of vortex dynamics and structure in fluids is crucial for weather pred
 
 Von Kármán vortex streets and ring vortices are regularly observed in natural phenomena, from atmospheric patterns around the Canary Islands to historical events. This project aims to explain such phenomena through simplified 2D simulations.
 
-A vortex is a rotating air current forming a spiral. In particular, vortices are spirals of turbulent currents. According to Bernoulli's principle, air pressure (or any other fluid) in a vortex is lower in the central region, increasing as we move away from the center.
+A vortex is a region of rotating fluid flow. According to Bernoulli's principle, the pressure in a vortex is lower in the central region where the velocity is higher, increasing as we move away from the center.
 
-Ring vortices arise when fluid is propelled with a certain velocity in a specific direction, forming characteristic mushroom shapes with toroidal symmetry due to lower pressure as the fluid advances compared to external pressure, causing rotation. Von Kármán vortex streets are repetitive patterns of swirling vortices caused by vortex shedding, responsible for unstable boundary layer separation in fluid flow around solids.
+Ring vortices arise when fluid is propelled through an opening or impulsively, forming characteristic toroidal (doughnut-shaped) structures. The vorticity at the boundary of the jet or puff rolls up into a ring due to velocity gradients, creating a self-propagating vortex with circulation around the ring's cross-section. Von Kármán vortex streets are repetitive patterns of swirling vortices caused by vortex shedding, responsible for unstable boundary layer separation in fluid flow around solids.
 
 ### Computational Approach
 
@@ -215,10 +215,10 @@ This backward tracing is more stable than forward methods. The implementation su
 To maintain stability, an **implicit formulation** is used:
 
 ```
-Q^old = Q^new + Δt · λ∇²Q^new
+Q^old = Q^new + Δt · ν∇²Q^new
 ```
 
-This creates a system with as many equations as fluid cells, solved using the **Gauss-Seidel relaxation method**. Note that numerical diffusion often arises naturally and may not always need explicit treatment.
+where ν is the diffusion coefficient (kinematic viscosity for velocity, or diffusivity κ for scalar fields). This creates a system with as many equations as fluid cells, solved using the **Gauss-Seidel relaxation method**. Note that numerical diffusion often arises naturally and may not always need explicit treatment.
 
 #### Projection (Operator P)
 
@@ -262,7 +262,7 @@ The most studied quantity is **propagation velocity**, which shows close relatio
 
 1. **Velocity vs. Energy**: Approximately **linear relationship** between translation velocity and initial energy input
 
-2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius ((a+b)/2)
+2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius (where the vortex cross-section has inner radius a and outer radius b, with mean radius (a+b)/2)
 
    These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume a and R are proportional (R = k·a), the theoretical formula becomes U = (πω₀a)/(4πk)·(ln(8k) - 1/4), which is indeed linear with a, though this remains conjectural.
 
