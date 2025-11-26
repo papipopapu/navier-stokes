@@ -160,6 +160,8 @@ The simulation solves the incompressible Navier-Stokes equations using operator 
 
 $$\frac{\partial \mathbf{u}}{\partial t} = -(\mathbf{u}\cdot\nabla)\mathbf{u} - \frac{1}{\rho}\nabla p + \nu \nabla^2\mathbf{u} + \mathbf{f}$$
 
+(or in non-dimensional form with $\rho=1$: $\frac{\partial \mathbf{u}}{\partial t} + (\mathbf{u}\cdot\nabla)\mathbf{u} = -\nabla p + \nu \nabla^2\mathbf{u} + \mathbf{f}$)
+
 and for scalar fields (e.g., dye density):
 
 $$\frac{\partial s}{\partial t} = -(\mathbf{u}\cdot\nabla)s + \kappa \nabla^2 s + S$$
@@ -210,7 +212,7 @@ $$U \propto r_{\text{mean}}$$
 
 where $r_{\text{mean}} = (a+b)/2$ is the mean radius of the vortex cross-section (with inner radius $a$ and outer radius $b$ in the 2D simulation).
 
-These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$ (i.e., the toroidal radius is proportional to the core radius), the theoretical formula becomes:
+These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume $R = k \cdot a$ (i.e., the toroidal radius is proportional to the core radius), substituting into the theoretical formula gives:
 
 $$U = \frac{\omega_0 a}{4 k}\left(\ln(8k) - \frac{1}{4}\right)$$
 
