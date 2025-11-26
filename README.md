@@ -162,11 +162,13 @@ Ring vortices arise when fluid is propelled through an opening or impulsively, f
 
 ### Computational Approach
 
-The simulation solves the Navier-Stokes equations for both the velocity field:
+The simulation solves the incompressible Navier-Stokes equations for both the velocity field:
 
 ```
 ∂u/∂t = -(u·∇)u - (1/ρ)∇p + ν∇²u + f     (Eq. 1)
 ```
+
+(In the non-dimensional form or when ρ=1, this simplifies to: ∂u/∂t + (u·∇)u = -∇p + ν∇²u + f)
 
 and for scalar fields (e.g., dye density):
 
@@ -250,7 +252,7 @@ U = (πω₀a²)/(4πR) · (ln(8R/a) - 1/4)
 ```
 
 where:
-- **a**: mean radius of small vortices
+- **a**: characteristic vortex core radius
 - **R**: toroidal radius
 - **ω₀**: vorticity
 
@@ -262,9 +264,9 @@ The most studied quantity is **propagation velocity**, which shows close relatio
 
 1. **Velocity vs. Energy**: Approximately **linear relationship** between translation velocity and initial energy input
 
-2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius (where the vortex cross-section has inner radius a and outer radius b, with mean radius (a+b)/2)
+2. **Velocity vs. Mean Radius**: Approximately **linear relationship** between translation velocity and mean vortex radius. In our observations, the vortex cross-section has inner and outer radii forming a ring, and we measure the mean radius (a+b)/2 where a and b are the inner and outer radii respectively.
 
-   These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume a and R are proportional (R = k·a), the theoretical formula becomes U = (πω₀a)/(4πk)·(ln(8k) - 1/4), which is indeed linear with a, though this remains conjectural.
+   These linear relationships indicate that velocity, energy, and radius are closely interconnected. If we assume the characteristic radius a and toroidal radius R are proportional (R = k·a), the theoretical formula becomes U = (πω₀a)/(4k)·(ln(8k) - 1/4), which is indeed linear with a, though this remains conjectural.
 
 3. **Velocity vs. Vorticity**: The relationship shows approximately **U ∝ √ω**, where ω is vorticity and U is translation velocity
 
