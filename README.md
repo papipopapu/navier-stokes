@@ -131,10 +131,10 @@ sim.setColorMap(map);
 
 The solver implements the incompressible Navier-Stokes equations:
 
-```
-∂u/∂t + (u·∇)u = -∇p + ν∇²u + f
-∇·u = 0
-```
+
+$$\frac{\partial \mathbf{u}}{\partial t} = -(\mathbf{u}\cdot\nabla)\mathbf{u} - \frac{1}{\rho}\nabla p + \nu \nabla^2\mathbf{u} + \mathbf{f}$$
+$$\nabla\dot u = 0$$
+
 
 Where:
 - **u**: velocity field
@@ -256,6 +256,7 @@ navier-stokes-main/
 ## License
 
 MIT License
+
 
 
 
