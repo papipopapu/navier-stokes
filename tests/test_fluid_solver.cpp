@@ -250,9 +250,7 @@ void test_periodic_forcing() {
     FluidSolver solver(20, 20);
     
     // Define a simple forcing function
-    auto forceU = [](Grid& u, double time, double dt) {
-        (void)time;
-        (void)dt;
+    auto forceU = [](Grid& u, double /*time*/, double /*dt*/) {
         u(10, 10) += 1.0f;
     };
     
