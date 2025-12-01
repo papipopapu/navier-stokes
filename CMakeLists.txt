@@ -61,3 +61,29 @@ endif()
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ standard: ${CMAKE_CXX_STANDARD}")
 message(STATUS "Compiler: ${CMAKE_CXX_COMPILER_ID}")
+
+# Optional: Build tests
+option(BUILD_TESTS "Build unit tests" ON)
+
+if(BUILD_TESTS)
+    enable_testing()
+    
+    # Test for Grid class
+    add_executable(test_grid 
+        tests/test_grid.cpp 
+        core/Grid.cpp
+    )
+    target_include_directories(test_grid PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/core)
+    add_test(NAME GridTests COMMAND test_grid)
+    
+    # Test for FluidSolver class
+    add_executable(test_fluid_solver 
+        tests/test_fluid_solver.cpp 
+        core/Grid.cpp 
+        core/FluidSolver.cpp
+    )
+    target_include_directories(test_fluid_solver PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/core)
+    add_test(NAME FluidSolverTests COMMAND test_fluid_solver)
+    
+    message(STATUS "Building with tests enabled")
+endif()

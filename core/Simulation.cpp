@@ -282,7 +282,7 @@ void Simulation::setPeriodicForcing(FluidSolver::PeriodicFunction u,
     m_periodicPressure = pressure;
 }
 
-void Simulation::setInitialConditions(FluidSolver::InitialConditionFunction initFunc) {
+void Simulation::setInitialConditions(FluidSolver::InitialConditionFunction /* initFunc */) {
     // Not implemented in this refactor - would need to expose grids
     // Could be added if needed
 }
